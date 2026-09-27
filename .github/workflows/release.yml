@@ -1,0 +1,66 @@
+name: Build & Release APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/output-rotation
+      - main
+    tags:
+      - "v*"
+      - "*release*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: "21"
+          cache: gradle
+
+      - name: Build Release APK
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleRelease --stacktrace --console=plain
+
+      - name: Prepare APKs for release
+        run: |
+          cp app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/AirPlay-v0.0.31-mirror.apk
+
+      - name: Upload Release Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AirPlay-v0.0.31-mirror
+          path: app/build/outputs/apk/release/AirPlay-v0.0.31-mirror.apk
+          if-no-files-found: error
+
+      - name: Create or Update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'mirror-release-20260928' }}
+          name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'AirPlay Receiver v0.0.31 (Mirror Mode)' }}
+          body: |
+            ### AirPlay Receiver for Android v0.0.31
+            
+            - **Tính năng Lật gương (Horizontal Flip / Mirror)**: Hỗ trợ lật ngược hiển thị theo chiều ngang cho kính lái (HUD), smart mirror, máy chiếu hoặc teleprompter.
+            - Nút bấm lật gương tiện lợi ngay trên màn hình chính (Overview), màn hình phát toàn màn hình (Fullscreen) và thanh điều khiển video.
+            - **Bản Release tối ưu**: Lược bỏ toàn bộ debug, kích hoạt R8 minification, resource shrinking và stripped native libraries giúp dung lượng file APK nhỏ nhẹ và chạy mượt mà.
+          draft: false
+          prerelease: false
+          files: |
+            app/build/outputs/apk/release/AirPlay-v0.0.31-mirror.apk
+            app/build/outputs/apk/release/app-release.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

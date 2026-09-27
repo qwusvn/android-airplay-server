@@ -49,7 +49,7 @@ fun SettingsScreen(viewModel: MainViewModel) {
     val launchOnConnect by viewModel.launchOnConnect.collectAsState()
     val maxFps by viewModel.maxFps.collectAsState()
     val overscanned by viewModel.overscanned.collectAsState()
-    val outputRotation by viewModel.outputRotation.collectAsState()
+    val mirrorOutput by viewModel.mirrorOutput.collectAsState()
     val requirePin by viewModel.requirePin.collectAsState()
     val allowNewConn by viewModel.allowNewConn.collectAsState()
     val autoStart by viewModel.autoStart.collectAsState()
@@ -170,12 +170,11 @@ fun SettingsScreen(viewModel: MainViewModel) {
             onValueChange = { viewModel.setResolution(it) }
         )
 
-        SettingChips(
-            title = stringResource(R.string.setting_output_rotation),
-            description = stringResource(R.string.setting_output_rotation_desc),
-            value = outputRotation.toString(),
-            options = listOf("0" to "0°", "90" to "90°", "180" to "180°", "270" to "270°"),
-            onValueChange = { it.toIntOrNull()?.let(viewModel::setOutputRotation) }
+        SettingSwitch(
+            title = stringResource(R.string.setting_mirror_output),
+            description = stringResource(R.string.setting_mirror_output_desc),
+            checked = mirrorOutput,
+            onCheckedChange = { viewModel.setMirrorOutput(it) }
         )
 
         SettingChipField(

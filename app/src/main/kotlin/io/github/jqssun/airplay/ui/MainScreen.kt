@@ -22,6 +22,7 @@ import androidx.compose.material.icons.automirrored.rounded.VolumeOff
 import androidx.compose.material.icons.automirrored.rounded.VolumeUp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.rounded.BrightnessHigh
+import androidx.compose.material.icons.rounded.Flip
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -99,7 +100,7 @@ fun MainScreen(
     val videoSessionPending by viewModel.videoSessionPending.collectAsState()
     val mirroringActive by viewModel.mirroringActive.collectAsState()
     val autoFullscreen by viewModel.autoFullscreen.collectAsState()
-    val outputRotation by viewModel.outputRotation.collectAsState()
+    val mirrorOutput by viewModel.mirrorOutput.collectAsState()
 
     // don't use movableContentOf: moving AndroidView across subcomposition boundaries makes it crash on reparent
     val video: @Composable () -> Unit = {
@@ -108,7 +109,7 @@ fun MainScreen(
             onSurfaceAvailable = onSurfaceAvailable,
             onSurfaceDestroyed = onSurfaceDestroyed,
             aspectRatio = aspect,
-            rotationDegrees = outputRotation
+            mirror = mirrorOutput
         )
     }
 
@@ -152,7 +153,7 @@ fun MainScreen(
                 onSurfaceAvailable = { viewModel.onVideoPlaybackSurfaceAvailable(it) },
                 onSurfaceDestroyed = { viewModel.onVideoPlaybackSurfaceDestroyed(it) },
                 aspectRatio = videoPlaybackAspect,
-                rotationDegrees = outputRotation
+                mirror = mirrorOutput
             )
         }
         if (isInPip) {
@@ -303,7 +304,7 @@ fun MainScreen(
                     onSurfaceAvailable = { viewModel.onVideoPlaybackSurfaceAvailable(it) },
                     onSurfaceDestroyed = { viewModel.onVideoPlaybackSurfaceDestroyed(it) },
                     applyAspectRatio = false,
-                    rotationDegrees = outputRotation,
+                    mirror = mirrorOutput,
                     modifier = sizeModifier
                 )
             }
@@ -432,6 +433,8 @@ fun MainScreen(
                         durationMs = durationMs,
                         contentScale = zoomState.contentScale,
                         isPipSupported = isPipSupported,
+                        isMirrored = mirrorOutput,
+                        onMirrorClick = { viewModel.toggleMirrorOutput() },
                         onRotateClick = {
                             activity?.let {
                                 it.requestedOrientation =
@@ -655,6 +658,14 @@ private fun OverviewContent(
                 }
                 if (state == ServerState.RUNNING && mirroringActive) {
                     Row(modifier = Modifier.align(Alignment.TopEnd).padding(4.dp)) {
+                        val mirrorOutput by viewModel.mirrorOutput.collectAsState()
+                        IconButton(onClick = { viewModel.toggleMirrorOutput() }, modifier = Modifier.dpadFocus()) {
+                            Icon(
+                                Icons.Rounded.Flip,
+                                contentDescription = stringResource(R.string.cd_mirror),
+                                tint = if (mirrorOutput) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                            )
+                        }
                         IconButton(onClick = onPip, modifier = Modifier.dpadFocus()) {
                             Icon(
                                 painterResource(R.drawable.ic_pip), contentDescription = stringResource(R.string.cd_pip),
@@ -786,6 +797,14 @@ private fun FullscreenVideo(
             modifier = Modifier.align(Alignment.TopEnd)
         ) {
             Row(modifier = Modifier.padding(8.dp)) {
+                val mirrorOutput by viewModel.mirrorOutput.collectAsState()
+                IconButton(onClick = { viewModel.toggleMirrorOutput() }, modifier = Modifier.dpadFocus()) {
+                    Icon(
+                        Icons.Rounded.Flip,
+                        contentDescription = stringResource(R.string.cd_mirror),
+                        tint = if (mirrorOutput) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.7f)
+                    )
+                }
                 IconButton(onClick = onPip, modifier = Modifier.dpadFocus()) {
                     Icon(
                         painterResource(R.drawable.ic_pip), contentDescription = stringResource(R.string.cd_pip),

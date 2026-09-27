@@ -41,6 +41,7 @@ import androidx.compose.material.icons.rounded.CropLandscape
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.FastForward
 import androidx.compose.material.icons.rounded.FitScreen
+import androidx.compose.material.icons.rounded.Flip
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.LockOpen
 import androidx.compose.material.icons.rounded.Pause
@@ -252,6 +253,8 @@ fun VideoControlsBottom(
     durationMs: Long,
     contentScale: VideoContentScale,
     isPipSupported: Boolean,
+    isMirrored: Boolean = false,
+    onMirrorClick: () -> Unit = {},
     onRotateClick: () -> Unit,
     onLockClick: () -> Unit,
     onContentScaleClick: () -> Unit,
@@ -327,6 +330,13 @@ fun VideoControlsBottom(
             }
             PlayerButton(onClick = onContentScaleClick) {
                 Icon(contentScale.icon(), contentDescription = stringResource(contentScale.nameRes()))
+            }
+            PlayerButton(onClick = onMirrorClick) {
+                Icon(
+                    Icons.Rounded.Flip,
+                    contentDescription = stringResource(R.string.cd_mirror),
+                    tint = if (isMirrored) MaterialTheme.colorScheme.primary else Color.White
+                )
             }
             if (isPipSupported) {
                 PlayerButton(onClick = onPipClick) {

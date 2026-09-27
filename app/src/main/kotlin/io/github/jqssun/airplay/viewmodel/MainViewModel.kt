@@ -162,8 +162,8 @@ class MainViewModel @Inject constructor(app: Application) : AndroidViewModel(app
     private val _overscanned = MutableStateFlow(prefs.getBoolean(Prefs.OVERSCANNED, Prefs.DEF_OVERSCANNED))
     val overscanned: StateFlow<Boolean> = _overscanned.asStateFlow()
 
-    private val _outputRotation = MutableStateFlow(prefs.getInt(Prefs.OUTPUT_ROTATION, Prefs.DEF_OUTPUT_ROTATION))
-    val outputRotation: StateFlow<Int> = _outputRotation.asStateFlow()
+    private val _mirrorOutput = MutableStateFlow(prefs.getBoolean(Prefs.MIRROR_OUTPUT, Prefs.DEF_MIRROR_OUTPUT))
+    val mirrorOutput: StateFlow<Boolean> = _mirrorOutput.asStateFlow()
 
     private val _requirePin = MutableStateFlow(prefs.getBoolean(Prefs.REQUIRE_PIN, Prefs.DEF_REQUIRE_PIN))
     val requirePin: StateFlow<Boolean> = _requirePin.asStateFlow()
@@ -400,11 +400,12 @@ class MainViewModel @Inject constructor(app: Application) : AndroidViewModel(app
     fun setResolution(v: String) { _resolution.value = v; prefs.edit().putString(Prefs.RESOLUTION, v).apply(); _applyByServerRestart() }
     fun setMaxFps(v: Int) { _maxFps.value = v; prefs.edit().putInt(Prefs.MAX_FPS, v).apply(); _applyByServerRestart() }
     fun setOverscanned(v: Boolean) { _overscanned.value = v; prefs.edit().putBoolean(Prefs.OVERSCANNED, v).apply(); _applyByServerRestart() }
-    fun setOutputRotation(v: Int) {
-        val normalized = ((v % 360) + 360) % 360
-        if (normalized != 0 && normalized != 90 && normalized != 180 && normalized != 270) return
-        _outputRotation.value = normalized
-        prefs.edit().putInt(Prefs.OUTPUT_ROTATION, normalized).apply()
+    fun setMirrorOutput(v: Boolean) {
+        _mirrorOutput.value = v
+        prefs.edit().putBoolean(Prefs.MIRROR_OUTPUT, v).apply()
+    }
+    fun toggleMirrorOutput() {
+        setMirrorOutput(!_mirrorOutput.value)
     }
     fun setRequirePin(v: Boolean) { _requirePin.value = v; prefs.edit().putBoolean(Prefs.REQUIRE_PIN, v).apply(); _applyByServerRestart() }
     fun setAllowNewConn(v: Boolean) { _allowNewConn.value = v; prefs.edit().putBoolean(Prefs.ALLOW_NEW_CONN, v).apply(); _applyByServerRestart() }
