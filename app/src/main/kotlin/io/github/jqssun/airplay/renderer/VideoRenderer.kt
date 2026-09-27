@@ -65,6 +65,10 @@ class VideoRenderer(ctx: Context) {
         pipeline.setDisplaySurface(null)
     }
 
+    fun setMirrored(mirrored: Boolean) {
+        pipeline.setMirrored(mirrored)
+    }
+
     fun selectDecoders(w: Int, h: Int, fps: Int, h265: Boolean): Boolean = synchronized(lock) {
         avcDecoder = selector.avc()
         hevcDecoder = if (h265) selector.hevc(avcDecoder, w, h, fps) else null

@@ -41,6 +41,16 @@ class VideoPipeline {
     private var displayDirty = false
     @Volatile private var videoW = 0
     @Volatile private var videoH = 0
+    @Volatile var isMirrored = false; private set
+    private var pendingMirrored = false
+    private var mirrorDirty = false
+
+    fun setMirrored(mirrored: Boolean) = synchronized(lock) {
+        if (pendingMirrored == mirrored && isMirrored == mirrored) return@synchronized
+        pendingMirrored = mirrored
+        mirrorDirty = true
+        lock.notifyAll()
+    }
 
     fun start() = synchronized(lock) {
         if (running) return@synchronized
@@ -89,21 +99,33 @@ class VideoPipeline {
             var newDisplay: Surface? = null
             var displayChanged = false
             var doFrame = false
+            var repaintOnly = false
             synchronized(lock) {
-                while (running && !frameAvailable && !displayDirty) lock.wait()
+                while (running && !frameAvailable && !displayDirty && !mirrorDirty) lock.wait()
                 if (running && displayDirty) {
                     newDisplay = pendingDisplay
                     displayChanged = true
                     displayDirty = false
                 }
+                if (running && mirrorDirty) {
+                    isMirrored = pendingMirrored
+                    mirrorDirty = false
+                    if (hasFrame) repaintOnly = true
+                }
                 if (running && frameAvailable) {
                     frameAvailable = false
                     doFrame = true
+                    repaintOnly = false
                 }
             }
             if (!running) break
             if (displayChanged) _bindDisplay(newDisplay)
-            if (doFrame) _consumeAndDraw()
+            if (doFrame) {
+                _consumeAndDraw()
+            } else if (repaintOnly && window != EGL14.EGL_NO_SURFACE) {
+                egl?.makeCurrent(window)
+                _render()
+            }
         }
         _releaseGl()
     }
@@ -153,7 +175,7 @@ class VideoPipeline {
         GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, oesTex)
         GLES20.glUniformMatrix4fv(uTexMatrix, 1, false, texMatrix, 0)
         GLES20.glEnableVertexAttribArray(aPos)
-        GLES20.glVertexAttribPointer(aPos, 2, GLES20.GL_FLOAT, false, 0, POS)
+        GLES20.glVertexAttribPointer(aPos, 2, GLES20.GL_FLOAT, false, 0, if (isMirrored) POS_MIRRORED else POS)
         GLES20.glEnableVertexAttribArray(aTex)
         GLES20.glVertexAttribPointer(aTex, 2, GLES20.GL_FLOAT, false, 0, TEX)
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4)
@@ -222,6 +244,7 @@ class VideoPipeline {
         private const val TAG = "VideoPipeline"
 
         private val POS = _fb(floatArrayOf(-1f, -1f, 1f, -1f, -1f, 1f, 1f, 1f))
+        private val POS_MIRRORED = _fb(floatArrayOf(1f, -1f, -1f, -1f, 1f, 1f, -1f, 1f))
         private val TEX = _fb(floatArrayOf(0f, 0f, 1f, 0f, 0f, 1f, 1f, 1f))
 
         private fun _fb(a: FloatArray): FloatBuffer =

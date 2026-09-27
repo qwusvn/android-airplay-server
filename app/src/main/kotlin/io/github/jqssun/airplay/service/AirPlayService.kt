@@ -407,6 +407,7 @@ class AirPlayService : LifecycleService(), RaopCallbackHandler, LogListener {
         lastOrientation = resources.configuration.orientation
         val (w, h) = _displaySize()
         videoRenderer.setResolution(w, h)
+        videoRenderer.setMirrored(prefs.getBoolean(Prefs.MIRROR_OUTPUT, Prefs.DEF_MIRROR_OUTPUT))
         _videoResolution.value = "${w}x${h}"
         _videoAspect.value = w.toFloat() / h
         NativeBridge.nativeSetDisplaySize(nativeHandle, w, h, maxFps)
@@ -528,6 +529,10 @@ class AirPlayService : LifecycleService(), RaopCallbackHandler, LogListener {
 
     fun clearVideoSurface(surface: Surface) {
         videoRenderer.clearSurface(surface)
+    }
+
+    fun setMirrorOutput(mirrored: Boolean) {
+        videoRenderer.setMirrored(mirrored)
     }
 
     fun setVideoPlaybackSurface(surface: Surface) {

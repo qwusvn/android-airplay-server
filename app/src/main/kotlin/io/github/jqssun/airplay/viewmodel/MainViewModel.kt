@@ -403,6 +403,7 @@ class MainViewModel @Inject constructor(app: Application) : AndroidViewModel(app
     fun setMirrorOutput(v: Boolean) {
         _mirrorOutput.value = v
         prefs.edit().putBoolean(Prefs.MIRROR_OUTPUT, v).apply()
+        service?.setMirrorOutput(v)
     }
     fun toggleMirrorOutput() {
         setMirrorOutput(!_mirrorOutput.value)
@@ -444,6 +445,7 @@ class MainViewModel @Inject constructor(app: Application) : AndroidViewModel(app
     // service binding
     fun bindService(svc: AirPlayService) {
         service = svc
+        svc.setMirrorOutput(_mirrorOutput.value)
         updateFromService()
     }
 
