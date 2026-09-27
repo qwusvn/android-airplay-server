@@ -100,6 +100,8 @@
     <string name="setting_idle_preview_desc">Show video surface while waiting for a connection</string>
     <string name="setting_auto_fullscreen">Enter fullscreen automatically</string>
     <string name="setting_auto_fullscreen_desc">Enter fullscreen when a client connects</string>
+    <string name="setting_output_rotation">Output rotation</string>
+    <string name="setting_output_rotation_desc">Rotate received mirroring and AirPlay video without re-encoding</string>
     <string name="setting_keep_screen_on">Keep screen on</string>
     <string name="setting_keep_screen_on_desc">Prevent sleeping while a client is connected</string>
     <string name="setting_advertise_video">Advertise AirPlay video support</string>

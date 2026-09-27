@@ -99,6 +99,7 @@ fun MainScreen(
     val videoSessionPending by viewModel.videoSessionPending.collectAsState()
     val mirroringActive by viewModel.mirroringActive.collectAsState()
     val autoFullscreen by viewModel.autoFullscreen.collectAsState()
+    val outputRotation by viewModel.outputRotation.collectAsState()
 
     // don't use movableContentOf: moving AndroidView across subcomposition boundaries makes it crash on reparent
     val video: @Composable () -> Unit = {
@@ -106,7 +107,8 @@ fun MainScreen(
         VideoSurfaceView(
             onSurfaceAvailable = onSurfaceAvailable,
             onSurfaceDestroyed = onSurfaceDestroyed,
-            aspectRatio = aspect
+            aspectRatio = aspect,
+            rotationDegrees = outputRotation
         )
     }
 
@@ -149,7 +151,8 @@ fun MainScreen(
             VideoSurfaceView(
                 onSurfaceAvailable = { viewModel.onVideoPlaybackSurfaceAvailable(it) },
                 onSurfaceDestroyed = { viewModel.onVideoPlaybackSurfaceDestroyed(it) },
-                aspectRatio = videoPlaybackAspect
+                aspectRatio = videoPlaybackAspect,
+                rotationDegrees = outputRotation
             )
         }
         if (isInPip) {
@@ -300,6 +303,7 @@ fun MainScreen(
                     onSurfaceAvailable = { viewModel.onVideoPlaybackSurfaceAvailable(it) },
                     onSurfaceDestroyed = { viewModel.onVideoPlaybackSurfaceDestroyed(it) },
                     applyAspectRatio = false,
+                    rotationDegrees = outputRotation,
                     modifier = sizeModifier
                 )
             }
